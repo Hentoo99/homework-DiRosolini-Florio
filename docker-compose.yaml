@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------
+  # 1. DATABASE CONDIVISO (MySQL)
+  # Gestisce sia User DB che Data DB in un unico container
+  # -----------------------------------------------------------
+  db:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # -----------------------------------------------------------
+  # 2. USER MANAGER (Server gRPC + API Flask)
+  # -----------------------------------------------------------
+  user-manager:
+    build:
+      context: .                      # <--- FONDAMENTALE: Contesto alla root
+      dockerfile: user-manager/Dockerfile
+    container_name: user_manager
+    ports:
+      - "5002:5000"                   # Porta REST API (Postman)
+      - "50051:50051"                 # Porta gRPC (comunicazione interna/esterna)
+    depends_on:
+      - db
+    environment:
+      - FLASK_APP=main.py
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=user_db               # Si connette al suo DB specifico [cite: 21]
+      - GRPC_PORT=50051
+
+  # -----------------------------------------------------------
+  # 3. DATA COLLECTOR (Client gRPC + Scheduler + API Flask)
+  # -----------------------------------------------------------
+  data-collector:
+    build:
+      context: .                      # <--- FONDAMENTALE: Contesto alla root
+      dockerfile: data-collector/Dockerfile
+    container_name: data_collector
+    ports:
+      - "5001:5000"                   # Mappiamo la 5000 interna sulla 5001 esterna per non avere conflitti
+    depends_on:
+      - db
+      - user-manager                  # Deve partire dopo User Manager
+    environment:
+      - FLASK_APP=main.py
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=data_db               # Si connette al suo DB specifico [cite: 16]
+      - USER_MANAGER_HOST=user-manager # Nome del servizio docker per gRPC
+      - USER_MANAGER_GRPC_PORT=50051
+
+volumes:
+  db_data:
