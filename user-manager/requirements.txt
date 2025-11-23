@@ -3,5 +3,5 @@ grpcio
 grpcio-tools
 SQLAlchemy
 Flask-SQLAlchemy
-mysqlclient
+mysql.connector
 protobuf

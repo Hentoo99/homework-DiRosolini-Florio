@@ -3,11 +3,11 @@ version: '3.8'
 services:
   # -----------------------------------------------------------
   # 1. DATABASE CONDIVISO (MySQL)
-  # Gestisce sia User DB che Data DB in un unico container
   # -----------------------------------------------------------
   db:
     image: mysql:8.0
     container_name: mysql_container
+    command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password
@@ -18,16 +18,16 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # -----------------------------------------------------------
-  # 2. USER MANAGER (Server gRPC + API Flask)
+  # 2. USER MANAGER
   # -----------------------------------------------------------
   user-manager:
     build:
-      context: .                      # <--- FONDAMENTALE: Contesto alla root
+      context: .
       dockerfile: user-manager/Dockerfile
     container_name: user_manager
     ports:
-      - "5002:5000"                   # Porta REST API (Postman)
-      - "50051:50051"                 # Porta gRPC (comunicazione interna/esterna)
+      - "5002:5000"
+      - "50051:50051"
     depends_on:
       - db
     environment:
@@ -35,29 +35,29 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=user_db               # Si connette al suo DB specifico [cite: 21]
+      - DB_NAME=user_db
       - GRPC_PORT=50051
 
   # -----------------------------------------------------------
-  # 3. DATA COLLECTOR (Client gRPC + Scheduler + API Flask)
+  # 3. DATA COLLECTOR
   # -----------------------------------------------------------
   data-collector:
     build:
-      context: .                      # <--- FONDAMENTALE: Contesto alla root
+      context: .
       dockerfile: data-collector/Dockerfile
     container_name: data_collector
     ports:
-      - "5001:5000"                   # Mappiamo la 5000 interna sulla 5001 esterna per non avere conflitti
+      - "5001:5000"
     depends_on:
       - db
-      - user-manager                  # Deve partire dopo User Manager
+      - user-manager
     environment:
       - FLASK_APP=main.py
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=data_db               # Si connette al suo DB specifico [cite: 16]
-      - USER_MANAGER_HOST=user-manager # Nome del servizio docker per gRPC
+      - DB_NAME=data_db
+      - USER_MANAGER_HOST=user-manager
       - USER_MANAGER_GRPC_PORT=50051
 
 volumes:
