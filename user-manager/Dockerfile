@@ -15,4 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY user-manager/ .
 COPY proto/ ./proto/
 
+RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/user_manager.proto
+
 CMD ["python", "main.py"]

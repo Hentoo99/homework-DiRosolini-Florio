@@ -16,9 +16,28 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - flight_network
+
+
+ # ------------------------------------
+  # 2. Database per Data Collector (MongoDB) <--- RIPRISTINATO
+  # ------------------------------------
+  data_db:
+    image: mongo:6.0
+    container_name: flight_data_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    ports:
+      - "27017:27017"
+    volumes:
+      - data_mongo_data:/data/db
+    networks:
+      - flight_network
 
   # -----------------------------------------------------------
-  # 2. USER MANAGER
+  # 3. USER MANAGER
   # -----------------------------------------------------------
   user-manager:
     build:
@@ -37,9 +56,12 @@ services:
       - DB_PASSWORD=root_password
       - DB_NAME=user_db
       - GRPC_PORT=50051
-
+    networks:
+      - flight_network
+  
+  
   # -----------------------------------------------------------
-  # 3. DATA COLLECTOR
+  # 4. DATA COLLECTOR
   # -----------------------------------------------------------
   data-collector:
     build:
@@ -53,12 +75,18 @@ services:
       - user-manager
     environment:
       - FLASK_APP=main.py
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=root_password
-      - DB_NAME=data_db
+      - MONGO_URI=mongodb://admin:password123@data_db:27017
+      - OPENSKY_USERNAME=shisui-api-client
+      - OPENSKY_PASSWORD=WTgu37FxwuU9YBEog1vFHSWwzJMBXWb9
       - USER_MANAGER_HOST=user-manager
       - USER_MANAGER_GRPC_PORT=50051
+    networks:
+      - flight_network
 
 volumes:
   db_data:
+  data_mongo_data:
+
+networks:
+  flight_network:
+    driver: bridge

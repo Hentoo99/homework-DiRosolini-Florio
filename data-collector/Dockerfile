@@ -5,16 +5,16 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-
 RUN apt-get update \
-    && apt-get install -y gcc pkg-config default-libmysqlclient-dev \
     && apt-get clean
-# ----------------------------------
 
 COPY data-collector/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY data-collector/ .
+
 COPY proto/ ./proto/
+
+RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/user_manager.proto
 
 CMD ["python", "main.py"]
