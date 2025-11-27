@@ -3,7 +3,7 @@ import sys, atexit
 from pymongo import MongoClient
 from apscheduler.schedulers.background import BackgroundScheduler
 import collector
-import os
+import os, time
 import grpc
 sys.path.append(os.path.join(os.getcwd(), 'proto')) 
 import user_manager_pb2  
@@ -16,7 +16,8 @@ client = MongoClient(MONGO_URI)
 db = client.flight_data_db
 
 users_interests_collection = db.interests   
-flights_collection = db.flights  
+flights_collection_arrival = db.flights_arrival
+flights_collection_departure = db.flights_departure
 print("Connected to MongoDB.")
 
 
@@ -36,18 +37,27 @@ def update_flight_data():
         return
     for airport in airports:
         print(f"Scaricamento dati per: {airport}...")
-        flights = collector.get_arrivals_by_airport(airport)
+        flightsArrival = collector.get_arrivals_by_airport(airport)
         
-        if flights:
+        if flightsArrival:
             try:
-                for f in flights:
+                for f in flightsArrival:
                     f['airport_monitored'] = airport
-                
-                flights_collection.insert_many(flights)
-                print(f"Salvati {len(flights)} voli per {airport}")
+                flights_collection_arrival.insert_many(flightsArrival)
+                print(f"Salvati {len(flightsArrival)} voli arrivo per {airport}")
             except Exception as e:
                 print(f"Errore salvataggio Mongo: {e}")
 
+        flightsDepartures = collector.get_departures_by_airport(airport)
+        if flightsDepartures:
+            try:
+                for f in flightsDepartures:
+                    f['airport_monitored'] = airport
+                
+                flights_collection_departure.insert_many(flightsDepartures)
+                print(f"Salvati {len(flightsDepartures)} voli partenza per {airport}")
+            except Exception as e:
+                print(f"Errore salvataggio Mongo: {e}")
 
 
 scheduler = BackgroundScheduler()
@@ -137,13 +147,13 @@ def get_flight():
         json_interests = []
         for interest in interests:
             airport_code = interest['airport_code']
-            flights = list(flights_collection.find({'airport_monitored': airport_code}))
+            flights = list(flights_collection_arrival.find({'airport_monitored': airport_code}))
             for flight in flights:
                 flight['_id'] = str(flight['_id'])
             json_interests.append(flights)
         return flask.jsonify({'status': 'success', 'flights': json_interests}), 200
 
-    flights = list(flights_collection.find({'airport_monitored': airport_code}))
+    flights = list(flights_collection_arrival.find({'airport_monitored': airport_code}))
     for flight in flights:
         flight['_id'] = str(flight['_id'])
     return flask.jsonify({'status': 'success', 'flights': flights}), 200
@@ -153,16 +163,71 @@ def force_update_flight_data():
     print("Forzato aggiornamento dati voli.")
     update_flight_data()
     return flask.jsonify({'status': 'success', 'message': 'Flight data update triggered'}), 200
-"""
-@app.route('/check_user', methods=['POST'])
-def check_user():
-    print("Received request to check if user exists via REST API")
+
+
+@app.route('/get_last_flight', methods=['POST'])
+def get_last_flight():
+    print("Received request to get last flight data via REST API")
     data = flask.request.get_json()
     email = data.get('email')
-    with grpc.insecure_channel('user-manager:50051') as channel:
-        stub = user_manager_pb2_grpc.UserManagerStub(channel)
-        response = stub.CheckUserExists(user_manager_pb2.CheckUserExistsRequest(email=email))
-        return flask.jsonify({'exists': response.exists})"""
+    airport_code = data.get('airport_code')
+    print(f"Requested last flight for airport_code: {airport_code} by email: {email}")
+    if not check_user_exists(email):
+        print("User does not exist")
+        return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
+    
+    print(f"Fetching last flight data for email: {email}, airport_code: {airport_code}")
+    flightsarrival = flights_collection_arrival.find_one({'airport_monitored': airport_code}, sort=[('_id', -1)])
+    save = []
+    if flightsarrival:
+        flightsarrival['_id'] = str(flightsarrival['_id'])
+        save.append(flightsarrival)
+
+    flightsDepartures = flights_collection_departure.find_one({'airport_monitored': airport_code}, sort=[('_id', -1)])
+    if flightsDepartures:
+        flightsDepartures['_id'] = str(flightsDepartures['_id'])
+        save.append(flightsDepartures)
+
+    if len(save) == 0:
+        return flask.jsonify({'status': 'error', 'message': 'No flight data found for this airport'}), 404
+    return flask.jsonify({'status': 'success', 'flights': save}), 200   
+
+
+@app.route('/average', methods=['POST'])
+def get_average_flights():
+    print("Received request to get average flight data via REST API")
+    data = flask.request.get_json()
+    email = data.get('email')
+    airport_code = data.get('airport_code')
+    days = data.get('days', 1)
+
+    if not check_user_exists(email):
+        return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
+    
+    print(f"Calculating average flights for email: {email}, airport_code: {airport_code}, days: {days}")
+    seconds_back = days * 24 * 3600
+    current_time = int(time.time())
+    start_time = current_time - seconds_back
+    flight_count_arrival = flights_collection_arrival.count_documents({
+        'airport_monitored': airport_code,
+        'firstSeen': {'$gte': start_time}
+    })
+    average_per_day_arrival = flight_count_arrival / days
+
+    flight_count_departure = flights_collection_departure.count_documents({
+        'airport_monitored': airport_code,
+        'firstSeen': {'$gte': start_time}
+    })
+    average_per_day_departure = flight_count_departure / days
+    save = []
+    save.append(average_per_day_arrival)
+    save.append(average_per_day_departure)
+    return flask.jsonify({'status': 'success', 'average_flights_per_day': save}), 200
+
+
+
+    
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -17,6 +17,9 @@ DB_USER = 'root'
 DB_PASSWORD = 'root_password'
 DB_NAME = 'user_db'
 
+cache= {}
+cache_lock = threading.Lock()
+
 class UserManagerServicer(user_manager_pb2_grpc.UserManagerServicer):
     def CheckUserExists(self, request, context):
         print("gRPC request to check if user exists")
@@ -78,21 +81,36 @@ def home():
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
+    global cache
     print("Received data for new user")
+    data = flask.request.json
+    request_id = data['request_id'] 
+    print(f"Request ID: {request_id}")
+    if not request_id:
+            return flask.jsonify({"status": "Missing request_id"}), 400
+    with cache_lock:
+        if request_id in cache:
+            return flask.jsonify({"status": "Duplicate request", "user": cache[request_id]})
+    
     if(db_conn.is_connected()):
         if not get_is_inserted(flask.request.json):
             print("Adding new user to the database")
             cursor =  db_conn.cursor()
-            data = flask.request.json
             
             QUERY = "INSERT INTO users (email, name, surname) VALUES (%s, %s, %s)"
             valori = (data['email'], data['name'], data['surname'])
             cursor.execute(QUERY, valori)
             db_conn.commit()
             if cursor.rowcount > 0:
-                print("User added successfully")
-                return flask.jsonify({"status": "User added", "user": data})
-            return flask.jsonify({"status": "User not added", "user": data})
+                response = "User added successfully"
+            else:
+                response = "Failed to add user"
+            with cache_lock:
+                cache[request_id] = {
+                    "response": response,
+                    "timestamp": time.time()
+                }
+            return flask.jsonify({"status": response, "user": data})
         return flask.jsonify({"status": "User already exists", "user": flask.request.json})
     return flask.jsonify({"status": "DB not connected"})
 
