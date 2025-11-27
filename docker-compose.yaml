@@ -76,8 +76,8 @@ services:
     environment:
       - FLASK_APP=main.py
       - MONGO_URI=mongodb://admin:password123@data_db:27017
-      - OPENSKY_USERNAME=shisui-api-client
-      - OPENSKY_PASSWORD=OMW1NalBjVkN2Ia5LOYzdWPLJzRPX2cC
+      - OPENSKY_USERNAME=hentoo-api-client
+      - OPENSKY_PASSWORD=kltxoWgOEAjPFJKfePqCKSjqLmUMOT7g
       - USER_MANAGER_HOST=user-manager
       - USER_MANAGER_GRPC_PORT=50051
     networks:

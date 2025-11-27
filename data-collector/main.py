@@ -37,27 +37,28 @@ def update_flight_data():
         return
     for airport in airports:
         print(f"Scaricamento dati per: {airport}...")
-        flightsArrival = collector.get_arrivals_by_airport(airport)
-        
+       
+       
+        flightsArrival = collector.get_arrivals_by_airport(airport, hours_back=24*5)
         if flightsArrival:
             try:
                 for f in flightsArrival:
                     f['airport_monitored'] = airport
+                print(f"volo in arrivi: {flightsArrival}")
                 flights_collection_arrival.insert_many(flightsArrival)
                 print(f"Salvati {len(flightsArrival)} voli arrivo per {airport}")
             except Exception as e:
-                print(f"Errore salvataggio Mongo: {e}")
-
-        flightsDepartures = collector.get_departures_by_airport(airport)
+                print(f"Errore salvataggio Mongo arrival: {e}")
+        
+        flightsDepartures = collector.get_departures_by_airport(airport, hours_back=24*5)
         if flightsDepartures:
             try:
                 for f in flightsDepartures:
                     f['airport_monitored'] = airport
-                
                 flights_collection_departure.insert_many(flightsDepartures)
                 print(f"Salvati {len(flightsDepartures)} voli partenza per {airport}")
             except Exception as e:
-                print(f"Errore salvataggio Mongo: {e}")
+                print(f"Errore salvataggio Mongo departures: {e}")
 
 
 scheduler = BackgroundScheduler()
@@ -65,8 +66,7 @@ scheduler.add_job(func=update_flight_data, trigger="interval", hours=12)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
-# --- REST API Endpoints ---
-# openSky Data Retrieval Endpoint
+
 
 @app.route('/add_interest', methods=['POST'])
 def add_interest():
@@ -212,6 +212,7 @@ def get_average_flights():
         'airport_monitored': airport_code,
         'firstSeen': {'$gte': start_time}
     })
+
     average_per_day_arrival = flight_count_arrival / days
 
     flight_count_departure = flights_collection_departure.count_documents({
@@ -223,10 +224,6 @@ def get_average_flights():
     save.append(average_per_day_arrival)
     save.append(average_per_day_departure)
     return flask.jsonify({'status': 'success', 'average_flights_per_day': save}), 200
-
-
-
-    
 
 
 if __name__ == '__main__':
