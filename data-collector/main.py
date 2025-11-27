@@ -60,6 +60,10 @@ def update_flight_data():
             except Exception as e:
                 print(f"Errore salvataggio Mongo departures: {e}")
 
+def checkInterestExists(email, airport_code):
+    result = users_interests_collection.find_one({'email': email, 'airport_code': airport_code})
+    return result is not None
+
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=update_flight_data, trigger="interval", hours=12)
@@ -140,6 +144,9 @@ def get_flight():
     if not check_user_exists(email):
         return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
     
+    if not checkInterestExists(email, airport_code):
+        return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
+    
     print(f"Fetching flight data for email: {email}, airport_code: {airport_code if airport_code else 'ALL'}")
     if not airport_code:
         print("No specific airport_code provided, fetching for all user interests.")
@@ -176,6 +183,9 @@ def get_last_flight():
         print("User does not exist")
         return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
     
+    if not checkInterestExists(email, airport_code):
+        return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
+
     print(f"Fetching last flight data for email: {email}, airport_code: {airport_code}")
     flightsarrival = flights_collection_arrival.find_one({'airport_monitored': airport_code}, sort=[('_id', -1)])
     save = []
@@ -203,6 +213,9 @@ def get_average_flights():
 
     if not check_user_exists(email):
         return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
+    
+    if not checkInterestExists(email, airport_code):
+        return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
     
     print(f"Calculating average flights for email: {email}, airport_code: {airport_code}, days: {days}")
     seconds_back = days * 24 * 3600
