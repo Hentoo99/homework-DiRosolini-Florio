@@ -16,5 +16,6 @@ COPY data-collector/ .
 COPY proto/ ./proto/
 
 RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/user_manager.proto
+RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. proto/data_collector.proto
 
 CMD ["python", "main.py"]

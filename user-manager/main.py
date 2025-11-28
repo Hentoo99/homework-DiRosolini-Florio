@@ -10,7 +10,8 @@ sys.path.append(os.path.join(os.getcwd(), 'proto')) # FONDAMENTALE
 
 import user_manager_pb2       
 import user_manager_pb2_grpc  
-
+import data_collector_pb2
+import data_collector_pb2_grpc
 
 DB_HOST = 'db'
 DB_USER = 'root'
@@ -132,7 +133,14 @@ def get_user():
         return flask.jsonify({"status": "User not found", "email": data['email']})
     return flask.jsonify({"status": "DB not connected"})
     
-
+def removeInterests(email):
+    print(f"Removing interests for user: {email}")
+    with grpc.insecure_channel('data_collector:50052') as channel:
+        stub = data_collector_pb2_grpc.DataCollectorStub(channel)
+        response = stub.RemoveInterestbyUser(data_collector_pb2.UserRequest(email=email))
+        if not response.success:
+            return False
+    return True
 @app.route('/rmv_user', methods=['POST'])
 def rmv_user():
     print("Received request to remove user")
@@ -147,8 +155,10 @@ def rmv_user():
             cursor.execute(QUERY, valori)
             db_conn.commit()
             if cursor.rowcount > 0:
-                print("User removed successfully")
-                return flask.jsonify({"status": "User removed", "email": data['email']})
+                if removeInterests(data['email']):
+                    print("User removed successfully")
+                    return flask.jsonify({"status": "User removed", "email": data['email']})
+                return flask.jsonify({"status": "User not removed from interests", "email": data['email']})
             return flask.jsonify({"status": "User not removed", "email": data['email']})
         return flask.jsonify({"status": "User does not exist", "email": flask.request.json['email']})
     return flask.jsonify({"status": "DB not connected"})

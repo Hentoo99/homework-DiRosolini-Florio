@@ -1,13 +1,19 @@
 import flask
-import sys, atexit
+import sys, atexit, threading
 from pymongo import MongoClient
 from apscheduler.schedulers.background import BackgroundScheduler
 import collector
 import os, time
 import grpc
+from concurrent import futures
+
 sys.path.append(os.path.join(os.getcwd(), 'proto')) 
 import user_manager_pb2  
 import user_manager_pb2_grpc
+import data_collector_pb2
+import data_collector_pb2_grpc
+
+            
 
 print("Starting Data Collector Service...")
 app = flask.Flask(__name__)
@@ -19,6 +25,26 @@ users_interests_collection = db.interests
 flights_collection_arrival = db.flights_arrival
 flights_collection_departure = db.flights_departure
 print("Connected to MongoDB.")
+
+class DataCollectorServicer(data_collector_pb2_grpc.DataCollectorServicer):
+    def RemoveInterestbyUser(self, request, context):
+        print("gRPC request to remove user interest")
+        email = request.email
+        response = users_interests_collection.delete_many({'email': email})
+        
+        if response.deleted_count == 0:
+            print(f"No interests found for user: {email}")
+            return data_collector_pb2.DataCollectorResponse(success = False)
+        print(f"Removed {response.deleted_count} interests for user: {email}")
+        return data_collector_pb2.DataCollectorResponse(success = True)
+    
+def run_grpc_server():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    data_collector_pb2_grpc.add_DataCollectorServicer_to_server(DataCollectorServicer(), server)
+    server.add_insecure_port('[::]:50052')
+    server.start()
+    print("gRPC server started on port 50052", flush=True)
+    server.wait_for_termination()
 
 
 def check_user_exists(email):
@@ -240,5 +266,8 @@ def get_average_flights():
 
 
 if __name__ == '__main__':
+    grpc_thread = threading.Thread(target=run_grpc_server)
+    grpc_thread.start()
+
     app.run(host='0.0.0.0', port=5000, debug=True)
 
