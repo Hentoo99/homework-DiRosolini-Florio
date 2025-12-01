@@ -1,0 +1,245 @@
+{
+	"info": {
+		"_postman_id": "54edda6f-3c6c-4f15-9361-281d414622e1",
+		"name": "data-collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50290595",
+		"_collection_link": "https://hentollination-8637016.postman.co/workspace/Enricomaria-Di-Rosolini's-Works~e875f253-9a26-4250-8c2e-928ae5ad4f7e/collection/50290595-54edda6f-3c6c-4f15-9361-281d414622e1?action=share&source=collection_link&creator=50290595"
+	},
+	"item": [
+		{
+			"name": "add_interest",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LIML\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/add_interest",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"add_interest"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_flight",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/get_flight",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"get_flight"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list_interest",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/list_interests",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"list_interests"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "rmv_interest",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LICL\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/rmv_interest",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"rmv_interest"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "force_update",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5001/force_update",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"force_update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_last_flight",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LICC\"\n}"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/get_last_flight",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"get_last_flight"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "average",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LIML\",\n    \"days\": 2\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/average",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"average"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_arrivals",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code_arrivals:\": \"LIML\",\n    \"airport_code_departures\" : \"EHAM\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5001/get_arrivals",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"get_arrivals"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
