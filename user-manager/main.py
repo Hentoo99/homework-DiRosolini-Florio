@@ -32,7 +32,6 @@ app = flask.Flask(__name__)
 
 
 def get_is_inserted(data):
-    db_conn = get_db_connection()
     if db_conn.is_connected():
         cursor = db_conn.cursor()
         QUERY = "SELECT * FROM users WHERE email = %s"
@@ -147,7 +146,6 @@ def rmv_user():
     if(db_conn.is_connected()):
         print("Checking if user exists for removal")
         if get_is_inserted(flask.request.json):
-            print("User does not exist, cannot remove")
             cursor =  db_conn.cursor()
             data = flask.request.json
             QUERY = "DELETE FROM users WHERE email = %s"

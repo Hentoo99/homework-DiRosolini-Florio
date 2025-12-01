@@ -296,11 +296,7 @@ def get_average_flights():
         'firstSeen': {'$gte': start_time}
     })
     average_per_day_departure = flight_count_departure / days
-    save = []
-    save.append(average_per_day_arrival)
-    save.append(average_per_day_departure)
-    return flask.jsonify({'status': 'success', 'average_flights_per_day': save}), 200
-
+    return flask.jsonify({'status': 'success', 'average_flights_per_day_arrival': average_per_day_arrival ,  'average_flights_per_day_departure': average_per_day_departure }), 200
 
 if __name__ == '__main__':
     grpc_thread = threading.Thread(target=run_grpc_server)
