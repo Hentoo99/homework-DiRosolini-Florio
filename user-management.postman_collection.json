@@ -31,7 +31,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"request_id\": 23673274824,\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"name\" : \"Enricomaria\",\n    \"surname\": \"Di Rosolini\"\n}",
+					"raw": "{\n    \"request_id\": 236731362723243824,\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"name\" : \"Enricomaria\",\n    \"surname\": \"Di Rosolini\",\n    \"age\" : 27,\n    \"CF\" : \"DRSNCM99A13F258J\",\n    \"phone\": \"3519437316\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -100,7 +100,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\"\n}",
+					"raw": "{\n    \"email\" : \"gab99@gmail.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"

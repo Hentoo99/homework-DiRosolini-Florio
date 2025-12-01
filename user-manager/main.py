@@ -158,7 +158,7 @@ def rmv_user():
                 if removeInterests(data['email']):
                     print("User removed successfully")
                     return flask.jsonify({"status": "User removed", "email": data['email']})
-                return flask.jsonify({"status": "User not removed from interests", "email": data['email']})
+                return flask.jsonify({"status": "User doesn't have interests, but is removed", "email": data['email']})
             return flask.jsonify({"status": "User not removed", "email": data['email']})
         return flask.jsonify({"status": "User does not exist", "email": flask.request.json['email']})
     return flask.jsonify({"status": "DB not connected"})

@@ -45,7 +45,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"\"\n}",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LICC\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -107,7 +107,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LICL\"\n}",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LIML\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -217,7 +217,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code_arrivals:\": \"LIML\",\n    \"airport_code_departures\" : \"EHAM\"\n}",
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code_arrivals\": \"LICC\",\n    \"airport_code_departures\" : \"LMML\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
