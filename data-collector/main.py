@@ -250,13 +250,13 @@ def get_last_flight():
         return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
 
     print(f"Fetching last flight data for email: {email}, airport_code: {airport_code}")
-    flightsarrival = flights_collection_arrival.find_one({'airport_monitored': airport_code}, sort=[('_id', -1)])
+    flightsarrival = flights_collection_arrival.find_one({'airport_monitored': airport_code}, sort=[('lastseen', -1)])
     save = []
     if flightsarrival:
         flightsarrival['_id'] = str(flightsarrival['_id'])
         save.append(flightsarrival)
 
-    flightsDepartures = flights_collection_departure.find_one({'airport_monitored': airport_code}, sort=[('_id', -1)])
+    flightsDepartures = flights_collection_departure.find_one({'airport_monitored': airport_code}, sort=[('lastseen', -1)])
     if flightsDepartures:
         flightsDepartures['_id'] = str(flightsDepartures['_id'])
         save.append(flightsDepartures)
