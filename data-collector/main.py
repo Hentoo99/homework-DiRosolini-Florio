@@ -170,26 +170,38 @@ def get_flight():
     if not check_user_exists(email):
         return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
     
-    if not checkInterestExists(email, airport_code):
-        return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
     
+    json_interests = []
+
     print(f"Fetching flight data for email: {email}, airport_code: {airport_code if airport_code else 'ALL'}")
     if not airport_code:
         print("No specific airport_code provided, fetching for all user interests.")
         interests = list(users_interests_collection.find({'email': email}, {'_id': 0, 'airport_code': 1}))
-        json_interests = []
         for interest in interests:
             airport_code = interest['airport_code']
             flights = list(flights_collection_arrival.find({'airport_monitored': airport_code}))
             for flight in flights:
                 flight['_id'] = str(flight['_id'])
             json_interests.append(flights)
+            flights = list(flights_collection_departure.find({'airport_monitored': airport_code}))
+            for flight in flights:
+                flight['_id'] = str(flight['_id'])
+                print(flight)
+            json_interests.append(flights)
         return flask.jsonify({'status': 'success', 'flights': json_interests}), 200
-
+    
+    if not checkInterestExists(email, airport_code):
+        return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
+    
     flights = list(flights_collection_arrival.find({'airport_monitored': airport_code}))
     for flight in flights:
         flight['_id'] = str(flight['_id'])
-    return flask.jsonify({'status': 'success', 'flights': flights}), 200
+    json_interests.append(flights)
+    flights = list(flights_collection_departure.find({'airport_monitored': airport_code}))
+    for flight in flights:
+        flight['_id'] = str(flight['_id'])
+    json_interests.append(flights)
+    return flask.jsonify({'status': 'success', 'flights': json_interests}), 200
 
 @app.route('/force_update', methods=['POST'])
 def force_update_flight_data():
@@ -197,6 +209,31 @@ def force_update_flight_data():
     update_flight_data()
     return flask.jsonify({'status': 'success', 'message': 'Flight data update triggered'}), 200
 
+@app.route('/get_arrivals', methods=['POST'])
+def get_arrivals():
+    print("Received request to get arrivals via REST API")
+    data = flask.request.get_json()
+    email = data.get('email')
+    airport_code_arrivals = data.get('airport_code_arrivals')
+    airport_code_departures = data.get('airport_code_departures')
+    print(f"Requested arrivals for airport_code_arrivals: {airport_code_arrivals}, airport_code_departures: {airport_code_departures} by email: {email}")
+    if not check_user_exists(email):
+        return flask.jsonify({'status': 'error', 'message': 'User does not exist'}), 404
+    print(f"Checking interest for email: {email}, airport_code_arrivals: {airport_code_arrivals}")
+    if not checkInterestExists(email, airport_code_arrivals):
+        return flask.jsonify({'status': 'error', 'message': 'Interest for this airport does not exist for the user'}), 404
+    
+    print(f"Fetching arrivals for email: {email}, airport_code_arrivals: {airport_code_arrivals}, airport_code_departures: {airport_code_departures}")
+    flightsarrival = list(flights_collection_arrival.find({
+    'airport_monitored': airport_code_arrivals,
+    'estDepartureAirport': airport_code_departures
+    }))
+    print(flightsarrival)
+    if not flightsarrival:
+        return flask.jsonify({'status': 'error', 'message': 'No arrival flight data found for this airport'}), 404
+    for flight in flightsarrival:
+        flight['_id'] = str(flight['_id'])
+    return flask.jsonify({'status': 'success', 'flights_arrival': flightsarrival}), 200
 
 @app.route('/get_last_flight', methods=['POST'])
 def get_last_flight():

@@ -98,8 +98,8 @@ def add_user():
             print("Adding new user to the database")
             cursor =  db_conn.cursor()
             
-            QUERY = "INSERT INTO users (email, name, surname) VALUES (%s, %s, %s)"
-            valori = (data['email'], data['name'], data['surname'])
+            QUERY = "INSERT INTO users (email, name, surname, age, CF, phone) VALUES (%s, %s, %s, %s, %s, %s)"
+            valori = (data['email'], data['name'], data['surname'], data['age'], data['CF'], data['phone'])
             cursor.execute(QUERY, valori)
             db_conn.commit()
             if cursor.rowcount > 0:
