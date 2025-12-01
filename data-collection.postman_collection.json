@@ -160,7 +160,12 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LICC\"\n}"
+					"raw": "{\n    \"email\" : \"enricomariadr99@gmail.com\",\n    \"airport_code\": \"LICC\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
 					"raw": "http://127.0.0.1:5001/get_last_flight",

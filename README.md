@@ -1,4 +1,4 @@
-# Sistema Distribuito di Monitoraggio Voli e Gestione Utenti
+# Homework 1 DSBD
 
 ## Introduzione
 
